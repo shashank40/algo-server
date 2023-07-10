@@ -1,4 +1,4 @@
-#To run the server on local
+# To run the server on local
 
 1) Clone repo
 2)cd algo-server
