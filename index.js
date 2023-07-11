@@ -32,21 +32,31 @@ io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
   let lastSentTime = 0;
 
-  function sendData(data) {
+  function sendData(data, resolution) {
     const data_len = data.length;
     let i = 0;
+    let oldData = [];
+    let oldSent = false;
       setInterval(() => {
         if(i<data_len){
           if(data[i].time>=lastSentTime) {
-          socket.emit('receive_data', data[i]); 
-          lastSentTime = data[i].time;
-          }
+            socket.emit('receive_data', {newData: data[i], 
+              oldData: oldData, resolutionIncoming: resolution});
+            if(!oldSent){
+              oldSent = true;
+              oldData = [];
+            } 
+            lastSentTime = data[i].time;}
+          else oldData.push(data[i]);
           i++;
         }
-        else {
-          clearInterval();
-        }
-      },600);
+        else clearInterval();
+      },1000);
+
+      if(!oldSent && oldData.length>0){ //// this is if all data is old data but we still need to send
+        socket.emit('receive_data', {newData: null, 
+          oldData: oldData, resolutionIncoming: resolution});
+       }
   }
 
   socket.on("phase2", ({message})=>{
@@ -58,19 +68,19 @@ io.on("connection", (socket) => {
     console.log(message);
     if(message=="1"){ 
       const ohlc1min =  convertToOHLC(data, 1);
-      setTimeout(()=>{sendData(ohlc1min);}, 2000);
+      setTimeout(()=>{sendData(ohlc1min, message);}, 2000);
     }
     else if(message=="5"){ 
       const ohlc5min= convertToOHLC(data, 5);
-      setTimeout(()=>{sendData(ohlc5min);}, 2000);
+      setTimeout(()=>{sendData(ohlc5min, message);}, 2000);
     }
     else if(message=="30") {
       const ohlc30min = convertToOHLC(data, 30);
-      setTimeout(()=>{sendData(ohlc30min);}, 2000);
+      setTimeout(()=>{sendData(ohlc30min, message);}, 2000);
     }
     else{ 
       const ohlc1hr =  convertToOHLC(data, 60);
-      setTimeout(()=>{sendData(ohlc1hr);}, 2000); 
+      setTimeout(()=>{sendData(ohlc1hr,message);}, 2000); 
     };
   });
 
