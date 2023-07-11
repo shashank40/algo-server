@@ -29,7 +29,7 @@ function convertToOHLC(data, resolution) {
       "high" : interval.high,
       "low" : interval.low,
       "close"  :interval.close,
-      "time" : Number(timestamp)+19800,
+      "time" : Number(timestamp),
   });
   }
   return result;
