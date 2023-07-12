@@ -1,7 +1,7 @@
 function convertToOHLC(data, resolution) {
   const result = [];
   const OHLCData = {};
-  const resolutionMs = resolution * 4; 
+  const resolutionMs = resolution * 4;  //// resolution *60 would always give a multiple of 15 & eventually the factor comes out to be 4
 
   for (let i = 0; i < data.length; i++) {
     const {time, value} = data[i];

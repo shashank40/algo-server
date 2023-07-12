@@ -42,7 +42,7 @@ io.on("connection", (socket) => {
   function sendData(data, resolution = null) {
     const data_len = data.length;
     let i = 0;
-    if(resolution != null){
+    if(resolution != null){ /// if resolution is passed then it is phase 3 or phase 4
     let oldData = [];
     let oldSent = false;
       setInterval(() => {
@@ -66,7 +66,7 @@ io.on("connection", (socket) => {
           oldData: oldData, resolutionIncoming: resolution});
        }
       }
-      else{
+      else{ // else it is phase 2
 
         setInterval(() => {
           if(i<data_len){
@@ -86,22 +86,13 @@ io.on("connection", (socket) => {
 
   socket.on('phase3', ({message})=>{
     console.log(message);
-    if(message=="1"){ 
-      const ohlc1min =  convertToOHLC(data, 1);
-      setTimeout(()=>{sendData(ohlc1min, message);}, 100);
+
+    const sendDataInInterval = (resolution)=>{
+      const ohlcSend =  convertToOHLC(data, resolution);
+      setTimeout(()=>{sendData(ohlcSend, message);}, 100);
     }
-    else if(message=="5"){ 
-      const ohlc5min= convertToOHLC(data, 5);
-      setTimeout(()=>{sendData(ohlc5min, message);}, 100);
-    }
-    else if(message=="30") {
-      const ohlc30min = convertToOHLC(data, 30);
-      setTimeout(()=>{sendData(ohlc30min, message);}, 100);
-    }
-    else{ 
-      const ohlc1hr =  convertToOHLC(data, 60);
-      setTimeout(()=>{sendData(ohlc1hr,message);}, 100); 
-    };
+    const resolution = Number(message);
+    sendDataInInterval(resolution);
   });
 
   socket.on("phase4", ({datas, resolution})=>{
@@ -123,6 +114,7 @@ io.on("connection", (socket) => {
     const combinedData = combineOHLCData(instrumentsData);
     sendData(combinedData, resolution); 
   }
+    else console.log("No data selected");
   });
 
 });
